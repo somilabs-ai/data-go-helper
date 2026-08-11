@@ -1,0 +1,42 @@
+{
+  "session": {
+    "cookies": [],
+    "updatedAt": "2026-08-11T02:01:21.717Z",
+    "isLoggedIn": false
+  },
+  "appliedApis": [
+    {
+      "id": "15084084",
+      "title": "기상청_단기예보 ((구)동네예보) 조회서비스",
+      "provider": "기상청",
+      "status": "APPROVED",
+      "encodingKey": "sampleEncodingKeyDataGoKr1234567890%3D%3D",
+      "decodingKey": "sampleDecodingKeyDataGoKr1234567890==",
+      "appliedAt": "2026-08-01 14:20",
+      "limitPerDay": "10,000회",
+      "type": "OpenAPI",
+      "endpointUrl": "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0",
+      "usagePurpose": "연구 및 데이터 분석용 샘플"
+    },
+    {
+      "id": "15057739",
+      "title": "국토교통부_아파트매매 실거래자료",
+      "provider": "국토교통부",
+      "status": "APPROVED",
+      "encodingKey": "sampleEncodingKeyDataGoKr9876543210%3D%3D",
+      "decodingKey": "sampleDecodingKeyDataGoKr9876543210==",
+      "appliedAt": "2026-08-05 09:15",
+      "limitPerDay": "10,000회",
+      "type": "OpenAPI",
+      "endpointUrl": "http://openapi.molit.go.kr/OpenRT/RTMSDataSvcAptTradeDev",
+      "usagePurpose": "부동산 시장 분석 시스템 구축"
+    }
+  ],
+  "cart": [],
+  "jobs": [],
+  "settings": {
+    "autoSyncKeys": true,
+    "defaultUsagePurpose": "연구 및 데이터 분석, 서비스 개발 테스트",
+    "headlessBrowser": false
+  }
+}
