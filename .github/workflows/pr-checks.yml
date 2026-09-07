@@ -1,0 +1,45 @@
+# [somilabs-ai] PR 검증 워크플로우
+# 저장소: somilabs-ai/data-go-helper
+#
+# 배포는 하지 않는다. Vercel GitHub 연동이 develop push 를 받아 Production 으로
+# 배포한다(고정 도메인). 이 워크플로우는 develop 에 들어가기 전 검증만 담당한다.
+# — ADR-0021 D8-1 개정, somilabs-hub#181
+#
+# 2026-09-07 이전에는 이 파일이 토큰 기반 배포 워크플로우였다. #60(B Vercel 의
+# GitHub Login Connection 부재)이 풀리기 전의 우회로였고, 연동이 생긴 뒤로는
+# 같은 커밋에 배포가 두 번 도는 문제가 있어(실측: somilabs-hub#181) 검증 전용으로 바꿨다.
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
