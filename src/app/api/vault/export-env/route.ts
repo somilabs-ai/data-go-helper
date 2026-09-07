@@ -4,7 +4,7 @@ import { getVault } from '@/lib/db';
 export async function GET() {
   const vault = getVault();
   
-  let envLines: string[] = [
+  const envLines: string[] = [
     '# ========================================================',
     '# data.go.kr Public API Keys Export (.env)',
     '# Generated at: ' + new Date().toISOString(),

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { errorMessage } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -54,10 +55,10 @@ export async function POST(request: Request) {
       url: targetUrl,
       data: responseText
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({
       success: false,
-      message: `CORS 프록시 요청 실패: ${err.message}`
+      message: `CORS 프록시 요청 실패: ${errorMessage(err)}`
     }, { status: 500 });
   }
 }

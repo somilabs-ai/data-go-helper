@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { POPULAR_PUBLIC_APIS } from '@/lib/odcloud';
 import { saveAppliedApis, AppliedApiItem, getVault } from '@/lib/db';
 import { saveAppliedApisSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import type { OdcloudRow, ApiType } from '@/lib/db';
+import { errorMessage } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +24,7 @@ export async function POST(request: Request) {
         decodingKey: `presetKey_Decoding_${preset.id}_` + Buffer.from(preset.title).toString('base64').substring(0, 10),
         appliedAt: new Date().toLocaleDateString('ko-KR'),
         limitPerDay: '10,000회',
-        type: (preset.type as any) || 'OpenAPI',
+        type: (preset.type as ApiType) || 'OpenAPI',
         endpointUrl: `http://apis.data.go.kr/${1360000 + idx * 10}/service_${idx}`,
         usagePurpose: '공공데이터포털 수집 및 자동 테스트'
       });
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
         if (res.ok) {
           const json = await res.json();
           if (json && Array.isArray(json.data)) {
-            json.data.forEach((item: any, idx: number) => {
+            json.data.forEach((item: OdcloudRow, idx: number) => {
               const infId = item.id ? String(item.id) : String(15000000 + page * 20 + idx);
               collectedItems.push({
                 id: infId,
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
                 decodingKey: `collected_Dec_${infId}_` + Buffer.from(item.공공데이터한글명 || 'datago').toString('base64').substring(0, 10),
                 appliedAt: new Date().toLocaleDateString('ko-KR'),
                 limitPerDay: '10,000회',
-                type: (item.공공데이터제공형식 as any) || 'OpenAPI',
+                type: (item.공공데이터제공형식 as ApiType) || 'OpenAPI',
                 endpointUrl: item.URL || `https://www.data.go.kr/data/${infId}/openapi.do`,
                 usagePurpose: '자동 수집 및 DB 동기화'
               });
@@ -73,10 +75,10 @@ export async function POST(request: Request) {
       isSupabaseConfigured,
       appliedApis: vault.appliedApis
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({
       success: false,
-      message: err.message || 'API 수집 및 DB 저장 중 오류가 발생했습니다.'
+      message: errorMessage(err) || 'API 수집 및 DB 저장 중 오류가 발생했습니다.'
     }, { status: 500 });
   }
 }
