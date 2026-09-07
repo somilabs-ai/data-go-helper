@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { bulkApplyApis } from '@/lib/automation';
 import { getVault, saveVault, saveAppliedApis, clearCart, AppliedApiItem } from '@/lib/db';
 import { saveAppliedApisSupabase, syncCartSupabase } from '@/lib/supabase';
+import type { TargetItem } from '@/lib/db';
+import { errorMessage } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -20,11 +22,11 @@ export async function POST(request: Request) {
     let jobs;
     try {
       jobs = await bulkApplyApis(targetItems, purpose);
-    } catch (err: any) {
-      console.warn('Real browser automation failed, simulating bulk apply:', err.message);
+    } catch (err: unknown) {
+      console.warn('Real browser automation failed, simulating bulk apply:', errorMessage(err));
       
       // Simulation for smooth user experience / testing
-      jobs = targetItems.map((item: any) => ({
+      jobs = targetItems.map((item: TargetItem) => ({
         jobId: `job_${Date.now()}_${item.id}`,
         infId: item.id,
         title: item.title,
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     // Convert successful jobs into appliedApis in vault
-    const newlyApplied: AppliedApiItem[] = targetItems.map((item: any) => ({
+    const newlyApplied: AppliedApiItem[] = targetItems.map((item: TargetItem) => ({
       id: item.id,
       title: item.title,
       provider: item.provider || '공공기관',
@@ -56,10 +58,10 @@ export async function POST(request: Request) {
       jobs,
       appliedApis: getVault().appliedApis
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({
       success: false,
-      message: err.message || '일괄 신청 처리 중 오류가 발생했습니다.'
+      message: errorMessage(err) || '일괄 신청 처리 중 오류가 발생했습니다.'
     }, { status: 500 });
   }
 }

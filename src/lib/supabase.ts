@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { AppliedApiItem, StoredSession, VaultData, getVault, saveVault } from './db';
+import { AppliedApiItem, ApiType, StoredSession, VaultData, getVault, saveVault } from './db';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -31,7 +31,7 @@ export async function loadAppliedApisSupabase(): Promise<AppliedApiItem[]> {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        return data.map((row: any) => ({
+        return data.map((row: AppliedApiRow) => ({
           id: row.id,
           title: row.title,
           provider: row.provider,
@@ -101,7 +101,7 @@ export async function loadCartSupabase(): Promise<AppliedApiItem[]> {
         .select('*');
 
       if (!error && data) {
-        return data.map((row: any) => ({
+        return data.map((row: CartRow) => ({
           id: row.id,
           title: row.title,
           provider: row.provider,
@@ -209,4 +209,30 @@ CREATE TABLE IF NOT EXISTS datago_session (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
   `.trim();
+}
+
+/** Supabase 테이블 행 — snake_case 컬럼을 그대로 받는다. */
+interface AppliedApiRow {
+  id: string;
+  title: string;
+  provider: string;
+  status: AppliedApiItem['status'];
+  encoding_key?: string;
+  decoding_key?: string;
+  applied_at?: string;
+  limit_per_day?: string;
+  type?: ApiType;
+  endpoint_url?: string;
+  usage_purpose?: string;
+  notes?: string;
+}
+
+interface CartRow {
+  id: string;
+  title: string;
+  provider: string;
+  type?: ApiType;
+  description?: string;
+  url?: string;
+  category?: string;
 }

@@ -1,5 +1,6 @@
 import { chromium, BrowserContext, Page } from 'playwright';
 import { getVault, updateSession, saveAppliedApis, AppliedApiItem, ApplicationJob } from './db';
+import { errorMessage } from './errors';
 
 const DATA_GO_KR_LOGIN_URL = 'https://www.data.go.kr/mngt/member/login.do';
 const DATA_GO_KR_MYPAGE_URL = 'https://www.data.go.kr/iim/mng/selectOpenDataMngList.do';
@@ -63,9 +64,9 @@ export async function launchInteractiveLogin(): Promise<{ success: boolean; mess
     });
 
     return { success: true, message: '로그인 세션 저장이 완료되었습니다!' };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Interactive login error:', err);
-    return { success: false, message: `로그인 세션 수집 오류: ${err.message}` };
+    return { success: false, message: `로그인 세션 수집 오류: ${errorMessage(err)}` };
   } finally {
     if (browser) await browser.close();
   }
@@ -136,16 +137,16 @@ export async function bulkApplyApis(items: { id: string; title: string; provider
           job.status = 'SKIPPED';
           job.message = '이미 활용신청되어 있거나 이용 불가능한 API입니다.';
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         job.status = 'FAILED';
-        job.message = `처리 실패: ${err.message}`;
+        job.message = `처리 실패: ${errorMessage(err)}`;
       }
 
       job.updatedAt = new Date().toISOString();
     }
 
     return jobs;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Bulk apply error:', err);
     throw err;
   } finally {
@@ -205,7 +206,7 @@ export async function syncMyPageKeys(): Promise<AppliedApiItem[]> {
     }
 
     return scrapedItems.length > 0 ? scrapedItems : vault.appliedApis;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Sync MyPage error:', err);
     throw err;
   } finally {

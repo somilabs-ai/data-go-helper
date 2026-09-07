@@ -1,6 +1,8 @@
 import { POPULAR_PUBLIC_APIS } from '../src/lib/odcloud';
 import { saveAppliedApis, AppliedApiItem, getVault } from '../src/lib/db';
 import { saveAppliedApisSupabase, isSupabaseConfigured } from '../src/lib/supabase';
+import { errorMessage } from '../src/lib/errors';
+import type { OdcloudRow, ApiType } from '../src/lib/db';
 
 async function main() {
   console.log('🚀 Data.go.kr Open API 데이터 수집 및 DB 저장 시작...');
@@ -18,7 +20,7 @@ async function main() {
       decodingKey: `presetKey_Decoding_${preset.id}_` + Buffer.from(preset.title).toString('base64').substring(0, 10),
       appliedAt: new Date().toLocaleDateString('ko-KR'),
       limitPerDay: '10,000회',
-      type: (preset.type as any) || 'OpenAPI',
+      type: (preset.type as ApiType) || 'OpenAPI',
       endpointUrl: `http://apis.data.go.kr/${1360000 + idx * 10}/service_${idx}`,
       usagePurpose: '공공데이터포털 수집 및 자동 테스트'
     });
@@ -35,7 +37,7 @@ async function main() {
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data)) {
-          json.data.forEach((item: any, idx: number) => {
+          json.data.forEach((item: OdcloudRow, idx: number) => {
             const infId = item.id ? String(item.id) : String(15000000 + page * 20 + idx);
             collectedItems.push({
               id: infId,
@@ -46,7 +48,7 @@ async function main() {
               decodingKey: `collected_Dec_${infId}_` + Buffer.from(item.공공데이터한글명 || 'datago').toString('base64').substring(0, 10),
               appliedAt: new Date().toLocaleDateString('ko-KR'),
               limitPerDay: '10,000회',
-              type: (item.공공데이터제공형식 as any) || 'OpenAPI',
+              type: (item.공공데이터제공형식 as ApiType) || 'OpenAPI',
               endpointUrl: item.URL || `https://www.data.go.kr/data/${infId}/openapi.do`,
               usagePurpose: '자동 수집 및 DB 동기화'
             });
@@ -54,8 +56,8 @@ async function main() {
           console.log(`✅ Page ${page} 수집 완료 (${json.data.length}개)`);
         }
       }
-    } catch (err: any) {
-      console.warn(`⚠️ Page ${page} 수집 건너뜀: ${err.message}`);
+    } catch (err: unknown) {
+      console.warn(`⚠️ Page ${page} 수집 건너뜀: ${errorMessage(err)}`);
     }
   }
 

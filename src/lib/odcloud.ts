@@ -1,3 +1,4 @@
+import type { OdcloudRow, ApiType } from './db';
 export interface OpenDataApiMetadata {
   id: string; // infId or dataset id
   title: string;
@@ -84,8 +85,8 @@ export async function searchOpenDataApis(keyword: string = '', category: string 
       const resJson = await response.json();
       if (resJson && Array.isArray(resJson.data)) {
         const seenIds = new Set<string>();
-        let items: OpenDataApiMetadata[] = resJson.data.map((item: any, idx: number) => {
-          let rawId = item.id || item.공공데이터한글명 || `item_${idx}`;
+        let items: OpenDataApiMetadata[] = resJson.data.map((item: OdcloudRow, idx: number) => {
+          const rawId = item.id || item.공공데이터한글명 || `item_${idx}`;
           let uniqueId = String(rawId);
           if (seenIds.has(uniqueId)) {
             uniqueId = `${rawId}_p${page}_${idx}`;

@@ -25,6 +25,7 @@ import {
   Sparkles,
   AlertCircle
 } from 'lucide-react';
+import { errorMessage } from '@/lib/errors';
 
 interface ApiItem {
   id: string;
@@ -35,6 +36,21 @@ interface ApiItem {
   modifiedAt?: string;
   url?: string;
   category?: string;
+}
+
+/** /api/proxy 호출 결과를 화면에 그대로 보여주기 위한 형태. */
+interface ApiTestResponse {
+  status?: number;
+  success?: boolean;
+  message?: string;
+  data?: unknown;
+}
+
+/** /api/automation/apply-bulk 가 돌려주는 작업 항목. */
+interface ApplicationJob {
+  status: string;
+  title: string;
+  message?: string;
 }
 
 interface AppliedApiItem {
@@ -85,7 +101,7 @@ export default function Home() {
     { key: 'dataType', value: 'JSON' }
   ]);
   const [isTesting, setIsTesting] = useState(false);
-  const [testResponse, setTestResponse] = useState<any>(null);
+  const [testResponse, setTestResponse] = useState<ApiTestResponse | null>(null);
 
   // Manual Add Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -186,8 +202,8 @@ export default function Home() {
       } else {
         setApplyLogs(prev => [...prev, `⚠️ ${json.message}`]);
       }
-    } catch (err: any) {
-      setApplyLogs(prev => [...prev, `❌ 세션 수집 중 오류: ${err.message}`]);
+    } catch (err: unknown) {
+      setApplyLogs(prev => [...prev, `❌ 세션 수집 중 오류: ${errorMessage(err)}`]);
     }
   };
 
@@ -211,7 +227,7 @@ export default function Home() {
 
       if (json.success) {
         if (json.jobs && Array.isArray(json.jobs)) {
-          json.jobs.forEach((j: any) => {
+          json.jobs.forEach((j: ApplicationJob) => {
             setApplyLogs(prev => [...prev, `[${j.status}] ${j.title}: ${j.message || '완료'}`]);
           });
         }
@@ -221,8 +237,8 @@ export default function Home() {
       } else {
         setApplyLogs(prev => [...prev, `❌ 신청 오류: ${json.message}`]);
       }
-    } catch (err: any) {
-      setApplyLogs(prev => [...prev, `❌ 네트워크 예외: ${err.message}`]);
+    } catch (err: unknown) {
+      setApplyLogs(prev => [...prev, `❌ 네트워크 예외: ${errorMessage(err)}`]);
     } finally {
       setIsApplying(false);
     }
@@ -239,8 +255,8 @@ export default function Home() {
       } else {
         alert(json.message || '동기화 실패');
       }
-    } catch (e: any) {
-      alert(`동기화 중 오류 발생: ${e.message}`);
+    } catch (e: unknown) {
+      alert(`동기화 중 오류 발생: ${errorMessage(e)}`);
     } finally {
       setIsSyncing(false);
     }
@@ -272,8 +288,8 @@ export default function Home() {
         setManualDecodingKey('');
         setManualEndpoint('');
       }
-    } catch (e: any) {
-      alert('추가 실패: ' + e.message);
+    } catch (e: unknown) {
+      alert('추가 실패: ' + errorMessage(e));
     }
   };
 
@@ -318,8 +334,8 @@ export default function Home() {
       });
       const json = await res.json();
       setTestResponse(json);
-    } catch (err: any) {
-      setTestResponse({ success: false, message: err.message });
+    } catch (err: unknown) {
+      setTestResponse({ success: false, message: errorMessage(err) });
     } finally {
       setIsTesting(false);
     }

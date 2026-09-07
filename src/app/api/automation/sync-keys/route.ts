@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { syncMyPageKeys } from '@/lib/automation';
 import { getVault } from '@/lib/db';
 import { saveAppliedApisSupabase } from '@/lib/supabase';
+import { errorMessage } from '@/lib/errors';
 
 export async function POST() {
   try {
@@ -11,8 +12,8 @@ export async function POST() {
       if (apis && apis.length > 0) {
         await saveAppliedApisSupabase(apis);
       }
-    } catch (err: any) {
-      console.warn('Playwright MyPage sync failed, refreshing vault data:', err.message);
+    } catch (err: unknown) {
+      console.warn('Playwright MyPage sync failed, refreshing vault data:', errorMessage(err));
       apis = getVault().appliedApis;
     }
 
@@ -21,10 +22,10 @@ export async function POST() {
       message: '마이페이지 내역 및 인증키 동기화가 완료되었습니다.',
       appliedApis: apis
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({
       success: false,
-      message: err.message || '마이페이지 동기화 중 오류가 발생했습니다.'
+      message: errorMessage(err) || '마이페이지 동기화 중 오류가 발생했습니다.'
     }, { status: 500 });
   }
 }

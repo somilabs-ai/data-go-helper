@@ -5,8 +5,20 @@ import path from 'path';
 const DATA_DIR = path.join(process.cwd(), 'data');
 const VAULT_FILE = path.join(DATA_DIR, 'vault.json');
 
+/** Playwright 가 반환하는 쿠키(Cookie 타입과 호환되게 맞춘다). */
+export interface BrowserCookie {
+  name: string;
+  value: string;
+  domain?: string;
+  path?: string;
+  expires?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+}
+
 export interface StoredSession {
-  cookies: any[];
+  cookies: BrowserCookie[];
   updatedAt: string;
   isLoggedIn: boolean;
   userId?: string;
@@ -166,4 +178,32 @@ export function saveAppliedApis(apis: AppliedApiItem[]): void {
   }
   vault.appliedApis = Array.from(map.values());
   saveVault(vault);
+}
+
+/** AppliedApiItem.type 의 유니온만 따로 쓴다. */
+export type ApiType = NonNullable<AppliedApiItem['type']>;
+
+/**
+ * 공공데이터포털 odcloud API 가 돌려주는 행.
+ * 외부 스키마라 모든 필드가 선택적이다 — 한글 키가 실제 응답 키다.
+ */
+export interface OdcloudRow {
+  id?: string | number;
+  title?: string;
+  provider?: string;
+  description?: string;
+  URL?: string;
+  공공데이터한글명?: string;
+  공공데이터설명?: string;
+  공공데이터제공형식?: string;
+  제공기관명?: string;
+  분류체계?: string;
+  수정일자?: string;
+}
+
+/** 일괄 신청 요청 본문의 대상 항목. */
+export interface TargetItem {
+  id: string;
+  title: string;
+  provider?: string;
 }
